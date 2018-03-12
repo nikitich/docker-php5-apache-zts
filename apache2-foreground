@@ -37,4 +37,6 @@ for e in "${!APACHE_@}"; do
 	fi
 done
 
-exec apache2 -DFOREGROUND "$@"
+#exec php-fpm -F
+#exec apache2 -DFOREGROUND "$@" 
+exec /usr/bin/supervisord
