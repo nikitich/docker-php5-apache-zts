@@ -27,6 +27,7 @@ RUN echo 'deb http://ftp.debian.org/debian/ jessie non-free' >> /etc/apt/sources
 		ca-certificates \
 		curl \
 		xz-utils \
+		#TEST
         ##<custom>##
 		libapache2-mod-fastcgi \
 		supervisor \
@@ -238,7 +239,18 @@ RUN set -eux; \
 		--enable-mbstring \
 # --enable-mysqlnd is included here because it's harder to compile after the fact than extensions are (since it's a plugin for several extensions, not an extension in itself)
 		--enable-mysqlnd \
-		\
+# TEST extensions
+#		--enable-cli \
+#		--enable-pgsql \
+#		--enable-sqlite \
+#		--enable-radis \
+###		#--enable-json \
+#	--enable-imagick \
+#		--enable-apcu \
+#        --enable-pdo_mysql
+#		--enable-intl \
+##END TEST
+			\
 		--with-curl \
 		--with-libedit \
 		--with-openssl \
@@ -293,7 +305,16 @@ RUN cd /usr/src/ \
 RUN apt-get update && apt-get install -y \
 		libmcrypt-dev \
 	&& docker-php-ext-install -j$(nproc) \
-		mcrypt
+		mcrypt pdo_mysql pdo \
+	&& pecl install xdebug-2.5.5 \
+    && docker-php-ext-enable xdebug
+	#Install Xdebug
+	#&& pecl install xdebug-2.5.5 \
+    #&& echo "zend_extension=$(find /usr/local/lib/php/extensions/ -name xdebug.so)" > /usr/local/etc/php/conf.d/xdebug.ini \
+    #&& echo "xdebug.remote_enable=on" >> /usr/local/etc/php/conf.d/xdebug.ini \
+    #&& echo "xdebug.remote_autostart=off" >> /usr/local/etc/php/conf.d/xdebug.ini
+
+
 ##</custom>##
 
 ENTRYPOINT ["docker-php-entrypoint"]
@@ -336,6 +357,9 @@ RUN set -ex \
 		echo '[www]'; \
 		echo 'listen = 9000'; \
 } | tee php-fpm.d/zz-docker.conf
+
+#Install Composer
+RUN cd /tmp && curl -sS https://getcomposer.org/installer | php && mv composer.phar /usr/local/bin/composer
 
 EXPOSE 80
 EXPOSE 9000
